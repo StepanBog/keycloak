@@ -1,0 +1,38 @@
+server:
+  port: 8081
+keycloak:
+  realm: ipr-realm
+  auth-server-url: http://keycloak:8080/auth
+  ssl-required: external
+  resource: ipr
+  credentials:
+    secret: 8CSDw003M1PVdFbXuCKoV8XuGXNxIrjI
+  use-resource-role-mappings: true
+  bearer-only: true
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/service}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:admin}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    generate-ddl: true
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        ddl-auto: create
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  devtools:
+    add-properties: false
+
+#liquibase:
+#  change-log: classpath:changelog/db.changelog-master.xml.xml
+#  url: ${spring.datasource.url}
+#  user: ${spring.datasource.username}
+#  password: ${spring.datasource.password}
+#  enabled: ${LIQUIBASE_ENABLED:false}

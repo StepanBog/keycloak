@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd">
+
+    <changeSet author="sabogdanov" id="2023-09-13_14:41:00">
+
+        <createTable tableName="acl_class">
+            <column name="id" type="bigint" >
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="class" type="varchar(100)">
+                <constraints nullable="false" unique="true" />
+            </column>
+            <column name="class_id_type" type="varchar(100)" />
+        </createTable>
+
+        <createSequence dataType="bigint"
+                        startValue="10000"
+                        incrementBy="50"
+                        sequenceName="sequence_acl_class_id" />
+
+        <createTable tableName="acl_object_identity">
+            <column name="id" type="bigint" >
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="object_id_class" type="bigint" >
+                <constraints nullable="false" />
+            </column>
+            <column name="object_id_identity" type="varchar(36)">
+                <constraints nullable="false" />
+            </column>
+            <column name="parent_object" type="bigint" />
+            <column name="owner_person_id" type="int" />
+            <column name="entries_inheriting" type="boolean">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="acl_object_identity" columnNames="object_id_class,object_id_identity"/>
+        <addForeignKeyConstraint baseTableName="acl_object_identity"
+                                 baseColumnNames="parent_object"
+                                 constraintName="acl_object_identity_parent_object_fk"
+                                 referencedTableName="acl_object_identity"
+                                 referencedColumnNames="id" />
+        <addForeignKeyConstraint baseTableName="acl_object_identity"
+                                 baseColumnNames="object_id_class"
+                                 constraintName="acl_object_identity_class_fk"
+                                 referencedTableName="acl_class"
+                                 referencedColumnNames="id" />
+        <addForeignKeyConstraint baseTableName="acl_object_identity"
+                                 baseColumnNames="owner_person_id"
+                                 constraintName="acl_object_identity_owner_person_id_fk"
+                                 referencedTableName="person"
+                                 referencedColumnNames="id" />
+
+        <createSequence dataType="bigint"
+                        startValue="10000"
+                        incrementBy="50"
+                        sequenceName="sequence_acl_object_identity_id" />
+
+        <createTable tableName="acl_entry">
+            <column name="id" type="bigint" >
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="acl_object_identity" type="bigint" >
+                <constraints nullable="false" />
+            </column>
+            <column name="ace_order" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="person_id" type="int" />
+            <column name="role_id" type="int" />
+            <column name="mask" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="granting" type="boolean">
+                <constraints nullable="false" />
+            </column>
+            <column name="audit_success" type="boolean">
+                <constraints nullable="false" />
+            </column>
+            <column name="audit_failure" type="boolean">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="acl_entry"
+                                 baseColumnNames="acl_object_identity"
+                                 constraintName="acl_entry_acl_object_identity_fk"
+                                 referencedTableName="acl_object_identity"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="acl_entry"
+                                 baseColumnNames="person_id"
+                                 constraintName="acl_entry_person_id_fk"
+                                 referencedTableName="person"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="acl_entry"
+                                 baseColumnNames="role_id"
+                                 constraintName="acl_entry_role_id_fk"
+                                 referencedTableName="role"
+                                 referencedColumnNames="id"/>
+
+        <createSequence dataType="bigint"
+                        startValue="10000"
+                        incrementBy="50"
+                        sequenceName="sequence_acl_entry_id" />
+
+        <!--
+        Таблица для определения прав для создания сущностей.
+        В ней прописываются связь между классом и пользователями, которым разрешено создание сущностей
+        заданного класса
+         -->
+        <createTable tableName="acl_create_entry">
+            <column name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="class_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="person_id" type="int" />
+            <column name="role_id" type="int" />
+            <column name="audit_success" type="boolean">
+                <constraints nullable="false" />
+            </column>
+            <column name="audit_failure" type="boolean">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="acl_create_entry"
+                                 baseColumnNames="class_id"
+                                 constraintName="acl_create_entry_class_id_fk"
+                                 referencedTableName="acl_class"
+                                 referencedColumnNames="id" />
+        <addForeignKeyConstraint baseTableName="acl_create_entry"
+                                 baseColumnNames="person_id"
+                                 constraintName="acl_create_entry_person_id_fk"
+                                 referencedTableName="person"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="acl_create_entry"
+                                 baseColumnNames="role_id"
+                                 constraintName="acl_create_entry_role_id_fk"
+                                 referencedTableName="role"
+                                 referencedColumnNames="id"/>
+
+        <createSequence dataType="bigint"
+                        startValue="10000"
+                        incrementBy="50"
+                        sequenceName="sequence_acl_create_entry_id" />
+
+        <!--
+        Таблица для хранения пермиссий, которые должны быть добавлены в ACL таблицы для пользователя, которому
+        добавляют роль
+        -->
+        <createTable tableName="acl_role_permission">
+            <column name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="role_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="permission" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="acl_role_permission" columnNames="role_id,permission"/>
+
+        <addForeignKeyConstraint baseTableName="acl_role_permission"
+                                 baseColumnNames="role_id"
+                                 constraintName="acl_role_permission_role_id_fk"
+                                 referencedTableName="role"
+                                 referencedColumnNames="id" />
+
+        <createSequence dataType="bigint"
+                        startValue="10000"
+                        incrementBy="50"
+                        sequenceName="sequence_acl_role_permission_id" />
+    </changeSet>
+
+</databaseChangeLog>
